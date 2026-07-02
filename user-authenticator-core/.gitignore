@@ -1,0 +1,21 @@
+# Carpetas de compilación de Maven
+**/target/
+*.jar
+*.war
+
+# Archivos de configuración 
+.settings/
+.classpath
+.project
+.factorypath
+.idea/
+*.iml
+*.iws
+.vscode/
+.cursor/
+
+# Archivos del Sistema Operativo
+.DS_Store
+Thumbs.db
+log/
+*.log
