@@ -26,13 +26,12 @@ user_management/
     └── com.river.challenge.controller
         └── UserController.java          → Controlador (MVC)
     └── webapp
-        ├── index.zul                    → Vista (ZK)
-        └── css/style.css                → Estilos (responsive)
+        └── index.zul                    → Vista (ZK): componentes + estilos incrustados
 ```
 
 ### Patrón MVC (capa web)
 - **Modelo**: `User` (en la librería).
-- **Vista**: `index.zul` (componentes ZK) + `css/style.css`.
+- **Vista**: `index.zul` — todo el frontend (componentes ZK y estilos CSS incrustados en un `<style>`) vive en este único archivo.
 - **Controlador**: `UserController` (`SelectorComposer` de ZK) que delega en `UserService`.
 
 ### La librería como componente independiente
