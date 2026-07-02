@@ -1,5 +1,6 @@
 /home/alejandro/Documentos/user_management/user-authenticator-core/src/main/java/com/river/challenge/App.java
 /home/alejandro/Documentos/user_management/user-authenticator-core/src/main/java/com/river/challenge/auth/Authenticator.java
+/home/alejandro/Documentos/user_management/user-authenticator-core/src/main/java/com/river/challenge/auth/UserAuthenticatorImpl.java
 /home/alejandro/Documentos/user_management/user-authenticator-core/src/main/java/com/river/challenge/config/DatabaseConnection.java
 /home/alejandro/Documentos/user_management/user-authenticator-core/src/main/java/com/river/challenge/dao/UserDao.java
 /home/alejandro/Documentos/user_management/user-authenticator-core/src/main/java/com/river/challenge/model/user.java
