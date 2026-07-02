@@ -1,48 +1,61 @@
 <?page title="River Software - Gestión de Usuarios"?>
-<window title="Sistema de Gestión de Usuarios (River Software)" border="normal" width="800px" mode="embedded" position="center,center"
-        apply="com.river.challenge.controller.UserController">
+<?link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"?>
+<?link rel="stylesheet" type="text/css" href="css/style.css"?>
+<div sclass="page" apply="com.river.challenge.controller.UserController">
 
-    <vlayout spacing="15px" style="padding:10px;">
-        <groupbox title="Datos del Usuario" mold="3d">
-            <grid fixedLayout="true">
-                <columns>
-                    <column width="150px" />
-                    <column />
-                </columns>
-                <rows>
-                    <row visible="false">
-                        <label value="ID:" />
-                        <intbox id="idInput" />
-                    </row>
-                    <row>
-                        <label value="Usuario:" style="font-weight:bold;" />
-                        <textbox id="usernameInput" width="90%" constraint="no empty: El usuario es obligatorio" />
-                    </row>
-                    <row>
-                        <label value="Correo Electrónico:" style="font-weight:bold;" />
-                        <textbox id="emailInput" width="90%" constraint="/.+@.+\.[a-z]+/: Ingrese un correo válido" />
-                    </row>
-                    <row>
-                        <label value="Contraseña:" style="font-weight:bold;" />
-                        <textbox id="passwordInput" type="password" width="90%" constraint="no empty: La contraseña es obligatoria" />
-                    </row>
-                </rows>
-            </grid>
-            <hlayout style="margin-top:10px; padding: 5px;" spacing="10px">
-                <button id="saveBtn" label="Guardar Usuario" mold="trendy" style="background-color: #4CAF50; color:white;" />
-                <button id="clearBtn" label="Limpiar Campos" mold="trendy" />
-            </hlayout>
-        </groupbox>
+    <div sclass="app-header">
+        <div sclass="brand">
+            <label sclass="brand-title" value="Gestión de Usuarios" />
+            <label sclass="brand-sub" value="River Software · Panel de administración" />
+        </div>
+    </div>
 
-        <groupbox title="Usuarios Registrados" mold="3d" vflex="1">
-            <listbox id="usersGrid" emptyMessage="No hay usuarios registrados en el sistema" mold="paging" pageSize="5">
+    <div sclass="container">
+
+        <div sclass="card form-card">
+            <label sclass="card-title" value="Datos del Usuario" />
+
+            <div style="display:none">
+                <intbox id="idInput" />
+            </div>
+
+            <div sclass="field">
+                <label sclass="field-label" value="Usuario" />
+                <textbox id="usernameInput" placeholder="Nombre de usuario"
+                         constraint="no empty: El usuario es obligatorio" />
+            </div>
+
+            <div sclass="field">
+                <label sclass="field-label" value="Correo electrónico" />
+                <textbox id="emailInput" placeholder="correo@ejemplo.com"
+                         constraint="/.+@.+\.[a-z]+/: Ingrese un correo válido" />
+            </div>
+
+            <div sclass="field">
+                <label sclass="field-label" value="Contraseña" />
+                <textbox id="passwordInput" type="password" placeholder="••••••••"
+                         constraint="no empty: La contraseña es obligatoria" />
+            </div>
+
+            <div sclass="actions">
+                <button id="saveBtn" label="Guardar Usuario" sclass="btn-primary" />
+                <button id="clearBtn" label="Limpiar" sclass="btn-ghost" />
+            </div>
+        </div>
+
+        <div sclass="card list-card">
+            <label sclass="card-title" value="Usuarios Registrados" />
+            <listbox id="usersGrid" sclass="users-table" hflex="1"
+                     emptyMessage="No hay usuarios registrados en el sistema"
+                     mold="paging" pageSize="8">
                 <listhead>
-                    <listheader label="ID" width="60px" sort="auto" />
-                    <listheader label="Usuario" sort="auto" />
-                    <listheader label="Correo" sort="auto" />
-                    <listheader label="Acciones" width="180px" />
+                    <listheader label="ID" width="70px" sort="auto" />
+                    <listheader label="Usuario" hflex="2" sort="auto" />
+                    <listheader label="Correo" hflex="3" sort="auto" />
+                    <listheader label="Acciones" width="170px" />
                 </listhead>
-                </listbox>
-        </groupbox>
-    </vlayout>
-</window>
+            </listbox>
+        </div>
+
+    </div>
+</div>

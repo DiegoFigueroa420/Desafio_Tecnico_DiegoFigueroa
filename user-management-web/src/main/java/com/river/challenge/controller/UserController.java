@@ -1,8 +1,7 @@
 package com.river.challenge.controller;
 
-import com.river.challenge.auth.UserAuthenticatorImpl;
-import com.river.challenge.dao.UserDao;
 import com.river.challenge.model.User;
+import com.river.challenge.service.UserService;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.select.SelectorComposer;
 import org.zkoss.zk.ui.select.annotation.Listen;
@@ -11,9 +10,15 @@ import org.zkoss.zul.*;
 
 import java.util.List;
 
+/**
+ * Controlador (MVC) de la vista de gestión de usuarios.
+ * Se apoya exclusivamente en la fachada {@link UserService} de la librería.
+ */
 public class UserController extends SelectorComposer<Component> {
 
-    // Vincular automáticamente los componentes del .zul mediante su ID
+    private static final String PASSWORD_HINT = "••••••••";
+    private static final String PASSWORD_EDIT_HINT = "Dejar vacío para no cambiarla";
+
     @Wire
     private Intbox idInput;
     @Wire
@@ -27,21 +32,18 @@ public class UserController extends SelectorComposer<Component> {
     @Wire
     private Button saveBtn;
 
-    // Instanciar los servicios de la biblioteca JAR
-    private final UserDao userDao = new UserDao();
-    private final UserAuthenticatorImpl authenticator = new UserAuthenticatorImpl();
+    // Punto de entrada único a la lógica de la librería (JAR core)
+    private final UserService userService = new UserService();
 
     @Override
     public void doAfterCompose(Component comp) throws Exception {
         super.doAfterCompose(comp);
-        // Al cargar la página, listamos inmediatamente los usuarios de la BD
         refreshUsersList();
     }
 
-    // Método para renderizar y refrescar la tabla
     private void refreshUsersList() {
-        usersGrid.getItems().clear(); // Limpiar filas anteriores
-        List<User> users = userDao.findAll(); // Llamada al JAR del Core
+        usersGrid.getItems().clear();
+        List<User> users = userService.listActiveUsers();
 
         for (final User user : users) {
             Listitem item = new Listitem();
@@ -49,39 +51,18 @@ public class UserController extends SelectorComposer<Component> {
             item.appendChild(new Listcell(user.getUsername()));
             item.appendChild(new Listcell(user.getEmail()));
 
-            // Celda de acciones (Modifica y Borra)
             Listcell actionCell = new Listcell();
             Hlayout actionsLayout = new Hlayout();
-            actionsLayout.setSpacing("10px");
+            actionsLayout.setSclass("row-actions");
+            actionsLayout.setSpacing("8px");
 
-            // Botón Seleccionar/Editar
             Button editBtn = new Button("Editar");
-            editBtn.setMold("trendy");
-            editBtn.addEventListener("onClick", event -> {
-                idInput.setValue(user.getId());
-                usernameInput.setValue(user.getUsername());
-                emailInput.setValue(user.getEmail());
-                passwordInput.setValue(user.getPassword());
-                saveBtn.setLabel("Actualizar Usuario");
-            });
+            editBtn.setSclass("btn-ghost btn-sm");
+            editBtn.addEventListener("onClick", event -> loadUserForEdit(user));
 
-            // Botón Eliminar
             Button deleteBtn = new Button("Eliminar");
-            deleteBtn.setMold("trendy");
-            deleteBtn.setStyle("background-color: #d9534f; color: white;");
-            deleteBtn.addEventListener("onClick", event -> {
-                Messagebox.show("¿Está seguro de eliminar a este usuario?", "Confirmación",
-                    Messagebox.OK | Messagebox.CANCEL, Messagebox.QUESTION, evt -> {
-                        if (Messagebox.ON_OK.equals(evt.getName())) {
-                            boolean deleted = userDao.delete(user.getId()); // Llamada al JAR del Core
-                            if (deleted) {
-                                Messagebox.show("Usuario eliminado con éxito", "Información", Messagebox.OK, Messagebox.INFORMATION);
-                                refreshUsersList();
-                                clearFields();
-                            }
-                        }
-                    });
-            });
+            deleteBtn.setSclass("btn-danger btn-sm");
+            deleteBtn.addEventListener("onClick", event -> confirmDelete(user));
 
             actionsLayout.appendChild(editBtn);
             actionsLayout.appendChild(deleteBtn);
@@ -92,31 +73,52 @@ public class UserController extends SelectorComposer<Component> {
         }
     }
 
-    //el click del boton de Guardar/Actualiza
+    private void loadUserForEdit(User user) {
+        idInput.setValue(user.getId());
+        usernameInput.setValue(user.getUsername());
+        emailInput.setValue(user.getEmail());
+        // No se carga la contraseña (está cifrada). Vacío = no cambiarla.
+        passwordInput.setValue("");
+        passwordInput.setPlaceholder(PASSWORD_EDIT_HINT);
+        saveBtn.setLabel("Actualizar Usuario");
+    }
+
+    private void confirmDelete(User user) {
+        Messagebox.show("¿Está seguro de eliminar a este usuario?", "Confirmación",
+            Messagebox.OK | Messagebox.CANCEL, Messagebox.QUESTION, evt -> {
+                if (Messagebox.ON_OK.equals(evt.getName())) {
+                    if (userService.deleteUser(user.getId())) {
+                        Messagebox.show("Usuario eliminado con éxito", "Información",
+                                Messagebox.OK, Messagebox.INFORMATION);
+                        refreshUsersList();
+                        clearFields();
+                    }
+                }
+            });
+    }
+
     @Listen("onClick = #saveBtn")
     public void onSaveUser() {
         String username = usernameInput.getValue();
         String email = emailInput.getValue();
         String password = passwordInput.getValue();
 
-        // Validar lógica de negocio usando el servicio del JAR
-        String validationError = authenticator.validateUserForm(username, email, password);
+        Integer id = idInput.getValue();
+        boolean isNew = (id == null);
+        boolean passwordProvided = password != null && !password.trim().isEmpty();
+
+        // Al crear la contraseña es obligatoria; al editar es opcional
+        String validationError = userService.validate(username, email, password, isNew);
         if (validationError != null) {
             Messagebox.show(validationError, "Error de Validación", Messagebox.OK, Messagebox.ERROR);
             return;
         }
 
-        Integer id = idInput.getValue();
         boolean success;
-
-        if (id == null) {
-            // Crear nuevo usuario
-            User newUser = new User(null, username, email, password);
-            success = userDao.create(newUser);
+        if (isNew) {
+            success = userService.createUser(new User(null, username, email, password));
         } else {
-            // Modificar usuario existente
-            User existingUser = new User(id, username, email, password);
-            success = userDao.update(existingUser);
+            success = userService.updateUser(new User(id, username, email, password), passwordProvided);
         }
 
         if (success) {
@@ -124,17 +126,18 @@ public class UserController extends SelectorComposer<Component> {
             refreshUsersList();
             clearFields();
         } else {
-            Messagebox.show("Ocurrió un error al procesar en la Base de Datos. Verifica duplicados.", "Error", Messagebox.OK, Messagebox.ERROR);
+            Messagebox.show("Ocurrió un error al procesar en la Base de Datos. Verifica duplicados.",
+                    "Error", Messagebox.OK, Messagebox.ERROR);
         }
     }
 
-    //elclic del botón de Limpiar
     @Listen("onClick = #clearBtn")
     public void clearFields() {
         idInput.setValue(null);
         usernameInput.setValue("");
         emailInput.setValue("");
         passwordInput.setValue("");
+        passwordInput.setPlaceholder(PASSWORD_HINT);
         saveBtn.setLabel("Guardar Usuario");
     }
 }

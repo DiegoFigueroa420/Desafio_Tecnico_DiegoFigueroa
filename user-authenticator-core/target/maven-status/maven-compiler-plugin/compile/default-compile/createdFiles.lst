@@ -1,6 +1,0 @@
-com/river/challenge/auth/Authenticator.class
-com/river/challenge/config/DatabaseConnection.class
-com/river/challenge/model/User.class
-com/river/challenge/dao/UserDao.class
-com/river/challenge/auth/UserAuthenticatorImpl.class
-com/river/challenge/App.class
