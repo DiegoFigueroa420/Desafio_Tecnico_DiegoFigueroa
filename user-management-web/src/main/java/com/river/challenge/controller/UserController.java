@@ -6,6 +6,7 @@ import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.select.SelectorComposer;
 import org.zkoss.zk.ui.select.annotation.Listen;
 import org.zkoss.zk.ui.select.annotation.Wire;
+import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.*;
 
 import java.util.List;
@@ -78,9 +79,11 @@ public class UserController extends SelectorComposer<Component> {
         usernameInput.setValue(user.getUsername());
         emailInput.setValue(user.getEmail());
         // No se carga la contraseña (está cifrada). Vacío = no cambiarla.
-        passwordInput.setValue("");
+        // setRawValue evita disparar la restricción "no empty" al dejarla vacía.
+        passwordInput.setRawValue("");
         passwordInput.setPlaceholder(PASSWORD_EDIT_HINT);
         saveBtn.setLabel("Actualizar Usuario");
+        Clients.clearWrongValue(new Component[]{usernameInput, emailInput, passwordInput});
     }
 
     private void confirmDelete(User user) {
@@ -134,10 +137,14 @@ public class UserController extends SelectorComposer<Component> {
     @Listen("onClick = #clearBtn")
     public void clearFields() {
         idInput.setValue(null);
-        usernameInput.setValue("");
-        emailInput.setValue("");
-        passwordInput.setValue("");
+        // setRawValue asigna el valor sin validar la restricción "no empty",
+        // evitando la WrongValueException que impedía limpiar los campos.
+        usernameInput.setRawValue("");
+        emailInput.setRawValue("");
+        passwordInput.setRawValue("");
         passwordInput.setPlaceholder(PASSWORD_HINT);
         saveBtn.setLabel("Guardar Usuario");
+        // Quita las marcas de error visuales si las hubiera
+        Clients.clearWrongValue(new Component[]{usernameInput, emailInput, passwordInput});
     }
 }
